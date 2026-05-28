@@ -28,10 +28,10 @@ jobs:
     - name: Build Project
       run: dotnet build --configuration Release -p:Version=${{ env.VERSION }}
 
-     Cav: Create GitHub Release
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          **/Release/*.dll
+          **/bin/Release/netstandard2.1/*.dll
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
