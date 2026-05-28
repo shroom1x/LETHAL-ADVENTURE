@@ -3,34 +3,42 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Version Condition="'$(Version)' == ''">1.0.0</Version>
+		<Version Condition="'$(Version)' == ''">1.0.3</Version>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Reference Include="0Harmony">
 			<HintPath>libs\0Harmony.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Assembly-CSharp">
 			<HintPath>libs\Assembly-CSharp.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="BepInEx">
 			<HintPath>libs\BepInEx.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>libs\Unity.TextMeshPro.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine">
 			<HintPath>libs\UnityEngine.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<HintPath>libs\UnityEngine.CoreModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UI">
 			<HintPath>libs\UnityEngine.UI.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UIModule">
 			<HintPath>libs\UnityEngine.UIModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
 
