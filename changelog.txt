@@ -1,3 +1,10 @@
+Version 1.0.4:
+
+• Improved plunger hit registration on various surfaces.
+• Fixed audio and hit synchronization for the plunger.
+• The plunger now has a battery-based durability indicator (this is a temporary solution).
+
+
 Version 1.0.3:
 
 • Death penalty for quota growth is now 6%, down from 25%.
