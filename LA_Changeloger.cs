@@ -1,8 +1,9 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,21 +27,60 @@ namespace LA_Changeloger
             return cachedVersion;
         }
 
+        public static bool IsFutureVersion(string line, Version currentVersion)
+        {
+            if (line.StartsWith("Version ", StringComparison.OrdinalIgnoreCase) && line.Contains(":"))
+            {
+                try
+                {
+                    string verStr = line.Replace("Version ", "").Replace(":", "").Trim();
+                    Version fileVersion = new Version(verStr);
+
+                    if (fileVersion > currentVersion) return true;
+                }
+                catch { }
+            }
+            return false;
+        }
+
         public static async Task<string> DownloadChangelogAsync()
         {
             string url = $"https://raw.githubusercontent.com/{GithubUser}/{GithubRepo}/main/changelog.txt";
+
             try
             {
                 using (WebClient client = new WebClient())
                 {
                     string rawText = await client.DownloadStringTaskAsync(new Uri(url));
 
-                    return $"Version {GetVersion()}:\n\n{rawText}";
+                    Version currentVersion = new Version(GetVersion());
+
+                    using (StringReader reader = new StringReader(rawText))
+                    using (StringWriter writer = new StringWriter())
+                    {
+                        string line;
+                        bool skipMode = false;
+
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (line.StartsWith("Version ", StringComparison.OrdinalIgnoreCase) && line.Contains(":"))
+                            {
+                                skipMode = IsFutureVersion(line, currentVersion);
+                            }
+
+                            if (!skipMode)
+                            {
+                                writer.WriteLine(line);
+                            }
+                        }
+
+                        return writer.ToString().Trim();
+                    }
                 }
             }
             catch (Exception)
             {
-                return $"Version {GetVersion()}:\n\n• Не удалось загрузить список изменений с GitHub. Проверьте подключение к интернету.";
+                return $"Version {GetVersion()}:\n\n• Не удалось загрузить список изменений с GitHub.";
             }
         }
     }
