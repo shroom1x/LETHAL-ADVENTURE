@@ -1,3 +1,5 @@
+Version 1.0.3:
+
 • Death penalty for quota growth is now 6%, down from 25%.
 • Decreased the death penalty for terminal credits to 12%, down from 25%.
 
@@ -10,7 +12,7 @@ Version 1.0.2:
 Version 1.0.1:
 
 • Turrets now have a 50% chance to berserk or shut down after being hit.
-• Turrets will also shut down for a longer period after berserking, in addition to the normal hit effect.
+• Turrets will also shut down for a longer period after berserking.
 • Replaced turret shutdown and startup sounds with default ones.
 
 • Adjusted the header display in the changelog menu.
