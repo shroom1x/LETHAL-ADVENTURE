@@ -1,0 +1,37 @@
+name: Build and Release Mod
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Get Version from Tag
+      id: get_version
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $version = $tag.TrimStart('v')
+        echo "VERSION=$version" >> $env:GITHUB_ENV
+
+    - name: Build Project
+      run: dotnet build --configuration Release -p:Version=${{ env.VERSION }}
+
+     Cav: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          **/Release/*.dll
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

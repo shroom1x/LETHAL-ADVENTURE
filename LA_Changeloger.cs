@@ -1,0 +1,191 @@
+﻿using System;
+using HarmonyLib;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+
+namespace LA_Changeloger
+{
+    [HarmonyPatch]
+    public class LA_VersionTextPatch
+    {
+        [HarmonyPatch(typeof(MenuManager), "Start")]
+        [HarmonyPostfix]
+        private static void MenuManager_Start_Postfix(MenuManager __instance)
+        {
+            try
+            {
+                TextMeshProUGUI[] allTexts = UnityEngine.Object.FindObjectsOfType<TextMeshProUGUI>(true);
+
+                foreach (var tmpText in allTexts)
+                {
+                    if (tmpText != null && tmpText.gameObject.name == "VersionNum")
+                    {
+                        string newVersion = "LETHAL ADVENTURE v1.0.3";
+
+                        tmpText.text = newVersion;
+                        tmpText.SetText(newVersion);
+                        tmpText.autoSizeTextContainer = true;
+
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MenuManager))]
+    public class MainMenuButtonPatch
+    {
+        [HarmonyPatch("Awake")]
+        [HarmonyPostfix]
+        public static void RenameCreditsButton(MenuManager __instance)
+        {
+            Transform menuCanvas = __instance.transform.parent != null ? __instance.transform.parent : __instance.transform;
+            if (menuCanvas == null) return;
+
+            Transform creditsButtonTransform = menuCanvas.Find("MenuContainer/MainButtons/Credits");
+            Transform creditsPanelTransform = menuCanvas.Find("MenuContainer/CreditsPanel");
+
+            if (creditsButtonTransform == null || creditsPanelTransform == null) return;
+
+            TextMeshProUGUI buttonText = creditsButtonTransform.GetComponentInChildren<TextMeshProUGUI>();
+            if (buttonText != null)
+            {
+                buttonText.text = "> CHANGELOG";
+            }
+
+            Transform newTextTransform = menuCanvas.Find("MenuContainer/LobbyHostSettings/FilesPanel/File3/Text (TMP) (3)");
+            if (newTextTransform != null)
+            {
+                newTextTransform.SetParent(creditsButtonTransform, false);
+
+                TextMeshProUGUI notifyText = newTextTransform.GetComponent<TextMeshProUGUI>();
+                if (notifyText != null)
+                {
+                    notifyText.enabled = true;
+                    newTextTransform.gameObject.SetActive(true);
+
+                    notifyText.text = "NEW!";
+                    notifyText.SetText("NEW!");
+                    notifyText.autoSizeTextContainer = true;
+
+                    notifyText.color = Color.green;
+
+                    RectTransform rect = newTextTransform.GetComponent<RectTransform>();
+                    if (rect != null)
+                    {
+                        rect.anchorMin = new Vector2(1f, 0.5f);
+                        rect.anchorMax = new Vector2(1f, 0.5f);
+                        rect.pivot = new Vector2(0f, 0.5f);
+
+                        rect.anchoredPosition = new Vector2(-160f, 0f);
+                        rect.localRotation = Quaternion.Euler(0f, 0f, 0f);
+                    }
+
+                    var oldPulsator = newTextTransform.gameObject.GetComponent<UIPulsator>();
+                    if (oldPulsator != null) UnityEngine.Object.Destroy(oldPulsator);
+
+                    var pulsator = newTextTransform.gameObject.AddComponent<UIPulsator>();
+                    pulsator.pulseSpeed = 5f;
+                    pulsator.pulseRange = 0.12f;
+                }
+            }
+
+            Button buttonComponent = creditsButtonTransform.GetComponent<Button>();
+            if (buttonComponent != null)
+            {
+                buttonComponent.onClick.RemoveAllListeners();
+
+                buttonComponent.onClick.AddListener(() =>
+{
+    __instance.PlayConfirmSFX();
+
+    Transform activeNotification = creditsButtonTransform.Find("Text (TMP) (3)");
+    if (activeNotification != null)
+    {
+        activeNotification.gameObject.SetActive(false);
+    }
+
+    TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
+
+    foreach (TextMeshProUGUI txt in allTexts)
+    {
+        if (txt.gameObject.name.Contains("CreditsText") || txt.text == "test")
+        {
+            txt.fontSize = 12.2f;
+            txt.characterSpacing = -12;
+            txt.lineSpacing = 40;
+            txt.text = "Version 1.0.3:\n\n" +
+            "• Death penalty for quota growth is now 6%, down from 25%.\n" +
+            "• Decreased the death penalty for terminal credits to 12%, down from 25%.\n\n\n" +
+            "Version 1.0.2:\n\n" +
+            "• Plunger now has durability and can break (except when hitting monsters).\n\n\n" +
+            "Version 1.0.1:\n\n" +
+            "• Turrets now have a 50% chance to berserk or shut down after being hit.\n" +
+            "• Turrets will also shut down for a longer period after berserking, in addition to the normal hit effect.\n" +
+            "• Replaced turret shutdown and startup sounds with default ones.\n\n" +
+            "• Adjusted the header display in the changelog menu.\n" +
+            "• Added animated \"NEW!\" label next to the changelog button.\n\n\n" +
+            "Version 1.0.0:\n\n" +
+            "• Initial Release";
+
+            ScrollRect scrollRect = txt.GetComponentInParent<ScrollRect>();
+            if (scrollRect != null)
+            {
+                scrollRect.scrollSensitivity = 0.025f;
+            }
+        }
+        else if (txt.text == "Credits" || txt.gameObject.name.Contains("Title") || txt.gameObject.name.Contains("Header"))
+        {
+            txt.text = "LETHAL ADVENTURE (MODPACK)";
+            txt.fontSize = 22.6f;
+            txt.autoSizeTextContainer = true;
+        }
+    }
+
+    creditsPanelTransform.gameObject.SetActive(true);
+});
+            }
+        }
+    }
+
+    public class UIPulsator : MonoBehaviour
+    {
+        public float pulseSpeed = 4f; public float pulseRange = 0.15f;
+        private Vector3 baseScale;
+        private RectTransform rectTransform;
+
+        void Awake()
+        {
+            rectTransform = GetComponent<RectTransform>();
+            if (rectTransform != null)
+            {
+                baseScale = rectTransform.localScale;
+            }
+            else
+            {
+                baseScale = transform.localScale;
+            }
+        }
+
+        void Update()
+        {
+            float scaleFactor = 1f + Mathf.Sin(Time.unscaledTime * pulseSpeed) * pulseRange;
+
+            if (rectTransform != null)
+            {
+                rectTransform.localScale = baseScale * scaleFactor;
+            }
+            else
+            {
+                transform.localScale = baseScale * scaleFactor;
+            }
+        }
+    }
+}
+
