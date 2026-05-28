@@ -1,0 +1,22 @@
+• Death penalty for quota growth is now 6%, down from 25%.
+• Decreased the death penalty for terminal credits to 12%, down from 25%.
+
+
+Version 1.0.2:
+
+• Plunger now has durability and can break (except when hitting monsters).
+
+
+Version 1.0.1:
+
+• Turrets now have a 50% chance to berserk or shut down after being hit.
+• Turrets will also shut down for a longer period after berserking, in addition to the normal hit effect.
+• Replaced turret shutdown and startup sounds with default ones.
+
+• Adjusted the header display in the changelog menu.
+• Added animated "NEW!" label next to the changelog button.
+
+
+Version 1.0.0:
+
+• Initial Release

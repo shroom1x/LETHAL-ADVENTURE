@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
@@ -11,6 +13,9 @@ namespace LA_Changeloger
     {
         private static string cachedVersion;
 
+        private const string GithubUser = "shroom1x";
+        private const string GithubRepo = "LETHAL-ADVENTURE";
+
         public static string GetVersion()
         {
             if (string.IsNullOrEmpty(cachedVersion))
@@ -19,6 +24,24 @@ namespace LA_Changeloger
                 cachedVersion = $"{version.Major}.{version.Minor}.{version.Build}";
             }
             return cachedVersion;
+        }
+
+        public static async Task<string> DownloadChangelogAsync()
+        {
+            string url = $"https://raw.githubusercontent.com/{GithubUser}/{GithubRepo}/main/changelog.txt";
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    string rawText = await client.DownloadStringTaskAsync(new Uri(url));
+
+                    return $"Version {GetVersion()}:\n\n{rawText}";
+                }
+            }
+            catch (Exception)
+            {
+                return $"Version {GetVersion()}:\n\n• Не удалось загрузить список изменений с GitHub. Проверьте подключение к интернету.";
+            }
         }
     }
 
@@ -38,7 +61,6 @@ namespace LA_Changeloger
                     if (tmpText != null && tmpText.gameObject.name == "VersionNum")
                     {
                         string newVersion = $"LETHAL ADVENTURE v{ModInfo.GetVersion()}";
-
                         tmpText.text = newVersion;
                         tmpText.SetText(newVersion);
                         tmpText.autoSizeTextContainer = true;
@@ -46,7 +68,7 @@ namespace LA_Changeloger
                     }
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
         }
     }
 
@@ -81,7 +103,6 @@ namespace LA_Changeloger
                 {
                     notifyText.enabled = true;
                     newTextTransform.gameObject.SetActive(true);
-
                     notifyText.text = "NEW!";
                     notifyText.SetText("NEW!");
                     notifyText.autoSizeTextContainer = true;
@@ -110,56 +131,47 @@ namespace LA_Changeloger
             if (buttonComponent != null)
             {
                 buttonComponent.onClick.RemoveAllListeners();
-                buttonComponent.onClick.AddListener(() =>
-                {
-                    __instance.PlayConfirmSFX();
 
-                    Transform activeNotification = creditsButtonTransform.Find("Text (TMP) (3)");
-                    if (activeNotification != null)
-                    {
-                        activeNotification.gameObject.SetActive(false);
-                    }
+                buttonComponent.onClick.AddListener(async () =>
+{
+    __instance.PlayConfirmSFX();
 
-                    TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
+    Transform activeNotification = creditsButtonTransform.Find("Text (TMP) (3)");
+    if (activeNotification != null)
+    {
+        activeNotification.gameObject.SetActive(false);
+    }
 
-                    foreach (TextMeshProUGUI txt in allTexts)
-                    {
-                        if (txt.gameObject.name.Contains("CreditsText") || txt.text == "test")
-                        {
-                            txt.fontSize = 12.2f;
-                            txt.characterSpacing = -12;
-                            txt.lineSpacing = 40;
+    TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
 
-                            txt.text = $"Version {ModInfo.GetVersion()}:\n\n" +
-"• Death penalty for quota growth is now 6%, down from 25%.\n" +
-"• Decreased the death penalty for terminal credits to 12%, down from 25%.\n\n\n" +
-"Version 1.0.2:\n\n" +
-"• Plunger now has durability and can break (except when hitting monsters).\n\n\n" +
-"Version 1.0.1:\n\n" +
-"• Turrets now have a 50% chance to berserk or shut down after being hit.\n" +
-"• Turrets will also shut down for a longer period after berserking, in addition to the normal hit effect.\n" +
-"• Replaced turret shutdown and startup sounds with default ones.\n\n" +
-"• Adjusted the header display in the changelog menu.\n" +
-"• Added animated \"NEW!\" label next to the changelog button.\n\n\n" +
-"Version 1.0.0:\n\n" +
-"• Initial Release";
+    string onlineChangelog = await ModInfo.DownloadChangelogAsync();
 
-                            ScrollRect scrollRect = txt.GetComponentInParent<ScrollRect>();
-                            if (scrollRect != null)
-                            {
-                                scrollRect.scrollSensitivity = 0.025f;
-                            }
-                        }
-                        else if (txt.text == "Credits" || txt.gameObject.name.Contains("Title") || txt.gameObject.name.Contains("Header"))
-                        {
-                            txt.text = "LETHAL ADVENTURE (MODPACK)";
-                            txt.fontSize = 22.6f;
-                            txt.autoSizeTextContainer = true;
-                        }
-                    }
+    foreach (TextMeshProUGUI txt in allTexts)
+    {
+        if (txt.gameObject.name.Contains("CreditsText") || txt.text == "test")
+        {
+            txt.fontSize = 12.2f;
+            txt.characterSpacing = -12;
+            txt.lineSpacing = 40;
 
-                    creditsPanelTransform.gameObject.SetActive(true);
-                });
+            txt.text = onlineChangelog;
+
+            ScrollRect scrollRect = txt.GetComponentInParent<ScrollRect>();
+            if (scrollRect != null)
+            {
+                scrollRect.scrollSensitivity = 0.025f;
+            }
+        }
+        else if (txt.text == "Credits" || txt.gameObject.name.Contains("Title") || txt.gameObject.name.Contains("Header"))
+        {
+            txt.text = "LETHAL ADVENTURE (MODPACK)";
+            txt.fontSize = 22.6f;
+            txt.autoSizeTextContainer = true;
+        }
+    }
+
+    creditsPanelTransform.gameObject.SetActive(true);
+});
             }
         }
     }
