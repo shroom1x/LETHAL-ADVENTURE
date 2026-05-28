@@ -13,11 +13,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("LA_Changeloger")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.3.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.3+6fcf60162bcb20cd5d6bcfbe66091444518d5977")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b2b585f8edf5f45c564cf30cf604e3f6ab319b5")]
 [assembly: System.Reflection.AssemblyProductAttribute("LA_Changeloger")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LA_Changeloger")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.3.0")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Создано классом WriteCodeFragment MSBuild.
 
