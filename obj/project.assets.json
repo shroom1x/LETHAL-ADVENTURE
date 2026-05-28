@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Files\\LA_Changeloger\\LA_Changeloger\\LA_Changeloger.csproj",
+      "projectUniqueName": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.csproj",
       "projectName": "LA_Changeloger",
-      "projectPath": "E:\\Files\\LA_Changeloger\\LA_Changeloger\\LA_Changeloger.csproj",
+      "projectPath": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.csproj",
       "packagesPath": "C:\\Users\\ShRm1X\\.nuget\\packages\\",
-      "outputPath": "E:\\Files\\LA_Changeloger\\LA_Changeloger\\obj\\",
+      "outputPath": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\ShRm1X\\AppData\\Roaming\\NuGet\\NuGet.Config",
