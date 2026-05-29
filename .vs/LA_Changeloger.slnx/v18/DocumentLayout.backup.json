@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|e:\\files\\lethal_adventure_modpack\\lethal-adventure\\la_changeloger.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|solutionrelative:la_changeloger.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|e:\\files\\lethal_adventure_modpack\\lethal-adventure\\la_changeloger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|solutionrelative:la_changeloger.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|e:\\files\\lethal_adventure_modpack\\lethal-adventure\\plugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|solutionrelative:plugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|e:\\files\\lethal_adventure_modpack\\lethal-adventure\\la_changeloger.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{B3273884-F4E8-9034-5DB5-42DF4CCBF48D}|LA_Changeloger.csproj|solutionrelative:la_changeloger.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,42 +22,43 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "LA_Changeloger.csproj",
               "DocumentMoniker": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.csproj",
               "RelativeDocumentMoniker": "LA_Changeloger.csproj",
               "ToolTip": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.csproj",
               "RelativeToolTip": "LA_Changeloger.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAACIAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-05-28T10:57:50.425Z"
+              "WhenOpened": "2026-05-28T10:57:50.425Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Plugin.cs",
               "DocumentMoniker": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\Plugin.cs",
               "RelativeDocumentMoniker": "Plugin.cs",
               "ToolTip": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\Plugin.cs",
               "RelativeToolTip": "Plugin.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-28T10:44:50.563Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "LA_Changeloger.cs",
               "DocumentMoniker": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.cs",
               "RelativeDocumentMoniker": "LA_Changeloger.cs",
               "ToolTip": "E:\\Files\\LETHAL_ADVENTURE_MODPACK\\LETHAL-ADVENTURE\\LA_Changeloger.cs",
               "RelativeToolTip": "LA_Changeloger.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAHQAAAAAAAAAAAAswAMAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-28T10:44:49.125Z",
               "EditorCaption": ""

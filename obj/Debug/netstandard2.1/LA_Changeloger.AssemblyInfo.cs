@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LA_Changeloger")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.3.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.3+8b7d5e01d799b8a4d57f205b17bc98e51cba8060")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.3+7fe7e1eeaf4caeef66d3f3037e821732b23acc50")]
 [assembly: System.Reflection.AssemblyProductAttribute("LA_Changeloger")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LA_Changeloger")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.3.0")]
