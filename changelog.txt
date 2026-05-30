@@ -1,3 +1,14 @@
+Version 1.1.0:
+
+• Fixed an issue where the reward was not credited after eliminating the 'Bracken' enemy.
+• Fixed an issue where weather conditions were displayed incorrectly in the terminal.
+
+• Mine explosions now destroy employees' bodies.
+• Teleporter no longer teleports employees' bodies.
+• Teleporter cost decreased from 375 to 190.
+• Shotgun no longer has default ammo loaded upon purchase.
+
+
 Version 1.0.4:
 
 • Improved plunger hit registration on various surfaces.
