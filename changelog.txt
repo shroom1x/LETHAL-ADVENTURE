@@ -1,7 +1,5 @@
 Version 1.1.1:
 
-• Fixed an error that occurred when entering the facility.
-
 • All "Monster Samples" now have a 50% chance to drop after killing monsters.
 • The price of the sample from Manticoil has been significantly reduced.
 • Tulip Snake will no longer drop a sample.
