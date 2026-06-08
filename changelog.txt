@@ -1,3 +1,8 @@
+Version 1.2.0:
+
+• Added a new 'TAX' command to the terminal, allowing quota reduction.
+
+
 Version 1.1.1:
 
 • All "Monster Samples" now have a 50% chance to drop after killing monsters.
