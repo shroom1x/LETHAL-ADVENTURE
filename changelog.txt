@@ -1,3 +1,16 @@
+Version 1.3.0:
+
+• Fixed a bug where the plunger dropped all items on the floor upon destruction and prevented players from picking them back up.
+• Fixed a bug where taxes were still calculated even after the ship traveled to planet Galetry.
+
+• Giant Kiwi's health has been reduced from 28 to 5.
+• The deadline extension cost calculation has been reworked and now scales based on the required quota.
+
+• Crew members can now significantly reduce the required quota by finishing the day with zero deaths.
+
+• The deposit desk no longer has a cooldown between placing items up for sale.
+
+
 Version 1.2.0:
 
 • Added a new 'TAX' command to the terminal, allowing quota reduction.
