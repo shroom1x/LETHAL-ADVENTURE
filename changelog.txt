@@ -1,3 +1,15 @@
+Version 1.4.0:
+
+• Fixed an issue where the frame rate would drop significantly upon entering the ship.
+• Fixed tooltip display to show different text depending on conditions.
+• Fixed an issue where players had incorrect keybinds configured.
+
+• Modified the quota calculation method to incorporate additional factors from other mechanics.
+• 'ButlerBees' creature now despawns after some time.
+
+• Terminal now features a new indicator showing your goal to complete.
+
+
 Version 1.3.1:
 
 • Fixed an issue that prevented health from restoring above 100 while the 'Stimpack' buff was active.
