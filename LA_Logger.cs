@@ -1,32 +1,129 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Globalization;
-using GameNetcodeStuff;
+using System.Text;
 using HarmonyLib;
 using UnityEngine;
+using Unity.Netcode;
+using GameNetcodeStuff;
 
 namespace LA_Changeloger
 {
     public class LAPickedUpMarker : MonoBehaviour
     {
+        public string firstFinderName = "Unknown";
+    }
+
+    public class ActiveFight
+    {
+        public float startTime;
+        public float lastHitTime;
+
+        public ActiveFight(float currentTime)
+        {
+            startTime = currentTime;
+            lastHitTime = currentTime;
+        }
+
+        public int GetDuration(float currentTime)
+        {
+            return Mathf.RoundToInt(currentTime - startTime);
+        }
     }
 
     public static class LA_Logger
     {
         private static string logFilePath;
+        private static bool hasLoggedFirstEntry = false;
 
-        private static int planetScrapTotal = 0;
-        private static int planetSpendingTotal = 0;
+        private static List<string> currentPlanetScrap = new List<string>();
+        private static List<int> currentPlanetValues = new List<int>();
+        private static HashSet<ulong> loggedNetworkObjectIds = new HashSet<ulong>();
+
+        private static Dictionary<string, ActiveFight> activeFights = new Dictionary<string, ActiveFight>();
+
+        private static int totalRoutes = 0;
+        private static Dictionary<string, int> globalRoutes = new Dictionary<string, int>();
+
+        private static int totalWeathers = 0;
+        private static Dictionary<string, int> globalWeathers = new Dictionary<string, int>();
+
+        private static int totalScrapPicks = 0;
+        private static Dictionary<string, int> globalScrapPicks = new Dictionary<string, int>();
+
+        private static int totalShopPurchases = 0;
+        private static Dictionary<string, int> globalShopPurchases = new Dictionary<string, int>();
+
+        private static int totalSpawnedCreatures = 0;
+        private static Dictionary<string, int> globalCreaturesSpawned = new Dictionary<string, int>();
+
+        private static int totalDamageEvents = 0;
+        private static Dictionary<string, int> globalDamageLogs = new Dictionary<string, int>();
+
+        private static int totalDeathEvents = 0;
+        private static Dictionary<string, int> globalDeaths = new Dictionary<string, int>();
+
+        private static int totalHitEvents = 0;
+        private static Dictionary<string, int> globalFights = new Dictionary<string, int>();
 
         private static List<string> currentPlanetShopLogs = new List<string>();
+        private static List<string> currentPlanetFightLogs = new List<string>();
+        private static int initialCreditsBeforePurchase = 0;
+        private static bool isFirstPurchaseThisPlanet = true;
 
-        private static Dictionary<string, int> planetScrapCounts = new Dictionary<string, int>();
-        private static Dictionary<string, int> planetScrapValues = new Dictionary<string, int>();
+        private static List<string> currentPlanetDamageLogs = new List<string>();
 
-        public static string lastLoggedCartSignature = "";
+        private static List<string> currentPlanetDeathLogs = new List<string>();
+
+        private static EnemyAI[] cachedEnemies;
+        private static float cachedEnemiesFrameTime = float.MinValue;
+
+        public static EnemyAI[] GetCachedEnemies()
+        {
+            float now = Time.time;
+            if (cachedEnemies == null || now != cachedEnemiesFrameTime)
+            {
+                cachedEnemies = UnityEngine.Object.FindObjectsOfType<EnemyAI>();
+                cachedEnemiesFrameTime = now;
+            }
+            return cachedEnemies;
+        }
+
+        public static EnemyAI FindClosestEnemy(Vector3 position, float maxDistance)
+        {
+            EnemyAI[] allEnemies = GetCachedEnemies();
+            if (allEnemies == null) return null;
+
+            float minDistance = maxDistance;
+            EnemyAI closest = null;
+
+            foreach (EnemyAI enemy in allEnemies)
+            {
+                if (enemy == null || enemy.isEnemyDead) continue;
+
+                float dist = Vector3.Distance(enemy.transform.position, position);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closest = enemy;
+                }
+            }
+
+            return closest;
+        }
+
+        public static string GetEnemyDisplayName(EnemyAI enemy)
+        {
+            if (enemy == null) return "Unknown Enemy";
+
+            if (enemy.enemyType != null && !string.IsNullOrEmpty(enemy.enemyType.enemyName))
+            {
+                return enemy.enemyType.enemyName;
+            }
+
+            return enemy.gameObject.name.Replace("(Clone)", "").Trim();
+        }
 
         static LA_Logger()
         {
@@ -41,55 +138,30 @@ namespace LA_Changeloger
                 }
 
                 logFilePath = Path.Combine(logsFolderPath, "log.txt");
-
                 File.WriteAllText(logFilePath, string.Empty);
+                hasLoggedFirstEntry = false;
             }
-            catch (Exception ex)
-            {
-            }
+            catch (Exception) { }
         }
 
-        public static void LogDayInfo()
+        public static void Initialize() { }
+
+        public static void ResetScrapList()
         {
-            if (string.IsNullOrEmpty(logFilePath)) return;
+            currentPlanetScrap.Clear();
+            currentPlanetValues.Clear();
+            loggedNetworkObjectIds.Clear();
 
-            try
-            {
-                if (TimeOfDay.Instance != null)
-                {
-                    int currentDay = 0;
-                    string planetName = "Undefined";
-                    if (StartOfRound.Instance != null)
-                    {
-                        if (StartOfRound.Instance.gameStats != null)
-                        {
-                            currentDay = StartOfRound.Instance.gameStats.daysSpent;
-                        }
+            currentPlanetShopLogs.Clear();
+            initialCreditsBeforePurchase = 0;
+            isFirstPurchaseThisPlanet = true;
 
-                        if (StartOfRound.Instance.currentLevel != null)
-                        {
-                            planetName = StartOfRound.Instance.currentLevel.PlanetName;
-                            if (string.IsNullOrEmpty(planetName))
-                            {
-                                planetName = StartOfRound.Instance.currentLevel.PlanetName;
-                            }
-                        }
-                    }
+            currentPlanetDamageLogs.Clear();
 
-                    int currentQuota = TimeOfDay.Instance.profitQuota;
+            currentPlanetDeathLogs.Clear();
+            currentPlanetFightLogs.Clear();
 
-                    planetScrapTotal = 0;
-                    planetScrapCounts.Clear();
-                    planetScrapValues.Clear();
-                    lastLoggedCartSignature = "";
-
-                    string logLine = $"========================================\n[DAY INFO]\nDay: {currentDay + 1}\nQuota: {currentQuota}\nPlanet: {planetName}";
-                    File.AppendAllText(logFilePath, logLine + Environment.NewLine);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
+            activeFights.Clear();
         }
 
         public static void LogPickedUpScrap(GrabbableObject scrapItem)
@@ -100,47 +172,152 @@ namespace LA_Changeloger
             {
                 if (scrapItem.itemProperties.isScrap)
                 {
-                    if (scrapItem.GetComponent<LAPickedUpMarker>() != null)
+                    if (scrapItem.scrapValue <= 0) return;
+
+                    var netObj = scrapItem.GetComponent<NetworkObject>();
+                    if (netObj != null)
                     {
-                        return;
+                        if (loggedNetworkObjectIds.Contains(netObj.NetworkObjectId)) return;
+                        loggedNetworkObjectIds.Add(netObj.NetworkObjectId);
                     }
 
-                    scrapItem.gameObject.AddComponent<LAPickedUpMarker>();
+                    if (scrapItem.GetComponent<LAPickedUpMarker>() != null) return;
+
+                    string finderName = "Unknown";
+                    if (scrapItem.playerHeldBy != null)
+                    {
+                        finderName = scrapItem.playerHeldBy.playerUsername;
+                    }
+                    else if (StartOfRound.Instance != null && StartOfRound.Instance.localPlayerController != null)
+                    {
+                        var localPlayer = StartOfRound.Instance.localPlayerController;
+                        if (localPlayer.isHoldingObject && localPlayer.currentlyHeldObjectServer == scrapItem)
+                        {
+                            finderName = localPlayer.playerUsername;
+                        }
+                    }
+
+                    var marker = scrapItem.gameObject.AddComponent<LAPickedUpMarker>();
+                    marker.firstFinderName = finderName;
 
                     string itemName = scrapItem.itemProperties.itemName;
                     int scrapValue = scrapItem.scrapValue;
 
-                    planetScrapTotal += scrapValue;
+                    currentPlanetScrap.Add($"- {itemName} (${scrapValue}) - found {finderName}");
+                    currentPlanetValues.Add(scrapValue);
 
-                    if (planetScrapCounts.ContainsKey(itemName))
-                    {
-                        planetScrapCounts[itemName]++;
-                    }
-                    else
-                    {
-                        planetScrapCounts[itemName] = 1;
-                    }
-
-                    planetScrapValues[itemName] = scrapValue;
+                    totalScrapPicks++;
+                    if (!globalScrapPicks.ContainsKey(itemName)) globalScrapPicks[itemName] = 0;
+                    globalScrapPicks[itemName]++;
                 }
             }
-            catch (Exception ex)
-            {
-            }
+            catch (Exception) { }
         }
 
-        public static void LogShopPurchase(string itemName, int cost, int terminalCredits)
+        public static void LogShopPurchase(string itemName, int cost, int creditsBefore, int creditsAfter)
         {
             try
             {
-                planetSpendingTotal += cost;
+                if (isFirstPurchaseThisPlanet)
+                {
+                    initialCreditsBeforePurchase = creditsBefore;
+                    isFirstPurchaseThisPlanet = false;
+                }
 
-                string logLine = $"{itemName} - cost ({cost}). Credits: {terminalCredits}";
-                currentPlanetShopLogs.Add(logLine);
+                currentPlanetShopLogs.Add($"- {itemName} (${cost}) - money left (${creditsAfter})");
+
+                totalShopPurchases++;
+                if (!globalShopPurchases.ContainsKey(itemName)) globalShopPurchases[itemName] = 0;
+                globalShopPurchases[itemName]++;
             }
-            catch (Exception)
+            catch (Exception) { }
+        }
+
+        public static void LogPlayerDamage(string username, int damageAmount, string sourceName, string enemyName)
+        {
+            try
             {
+                if (string.IsNullOrEmpty(username) || damageAmount <= 0) return;
+
+                if (sourceName == "Fall Damage" || sourceName == "Gravity")
+                {
+                    currentPlanetDamageLogs.Add($"- Player {username} took {damageAmount} damage, source: {sourceName}");
+                }
+                else
+                {
+                    currentPlanetDamageLogs.Add($"- Player {username} took {damageAmount} damage, source: {sourceName}, enemy: {enemyName}");
+                }
+
+                string damageKey = enemyName != "None"
+                    ? $"{username}, enemy: {enemyName}"
+                    : $"{username}, source: {sourceName}";
+
+                totalDamageEvents++;
+                if (!globalDamageLogs.ContainsKey(damageKey)) globalDamageLogs[damageKey] = 0;
+                globalDamageLogs[damageKey]++;
             }
+            catch (Exception) { }
+        }
+
+        public static void LogPlayerAttack(string attackerName, int damageAmount, string targetName, int durationSeconds, string remainingHP)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(attackerName) || damageAmount <= 0) return;
+
+                currentPlanetFightLogs.Add($"- {attackerName} dealt {damageAmount} damage to {targetName}, {durationSeconds} seconds, remaining HP: {remainingHP}");
+
+                totalHitEvents++;
+                if (!globalFights.ContainsKey(targetName)) globalFights[targetName] = 0;
+                globalFights[targetName]++;
+            }
+            catch (Exception) { }
+        }
+
+        public static int UpdateAndGetFightDuration(string participantA, string participantB)
+        {
+            try
+            {
+                string fightKey = string.Compare(participantA, participantB) < 0
+    ? $"{participantA}_{participantB}"
+    : $"{participantB}_{participantA}";
+
+                float currentTime = Time.time;
+                if (activeFights.ContainsKey(fightKey))
+                {
+                    ActiveFight fight = activeFights[fightKey];
+
+                    if (currentTime - fight.lastHitTime > 15f)
+                    {
+                        activeFights[fightKey] = new ActiveFight(currentTime);
+                        return 0;
+                    }
+
+                    fight.lastHitTime = currentTime;
+                    return fight.GetDuration(currentTime);
+                }
+                else
+                {
+                    activeFights[fightKey] = new ActiveFight(currentTime);
+                    return 0;
+                }
+            }
+            catch (Exception) { return 0; }
+        }
+
+        public static void LogPlayerDeath(string username, string timeText, string locationText, string causeText)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(username)) return;
+
+                currentPlanetDeathLogs.Add($"- {username} died ({causeText}), time: {timeText}, where: {locationText}");
+
+                totalDeathEvents++;
+                if (!globalDeaths.ContainsKey(username)) globalDeaths[username] = 0;
+                globalDeaths[username]++;
+            }
+            catch (Exception) { }
         }
 
         public static void LogPlanetSummary()
@@ -149,215 +326,377 @@ namespace LA_Changeloger
 
             try
             {
-                if (currentPlanetShopLogs.Count > 0)
+                EnemyAI[] allEnemies = GetCachedEnemies();
+                List<string> enemyLogs = new List<string>();
+
+                if (allEnemies != null)
                 {
-                    File.AppendAllText(logFilePath, "[SHOP INFO]" + Environment.NewLine);
-                    foreach (string shopLog in currentPlanetShopLogs)
+                    foreach (EnemyAI enemy in allEnemies)
                     {
-                        File.AppendAllText(logFilePath, shopLog + Environment.NewLine);
+                        if (enemy == null || enemy.enemyType == null) continue;
+
+                        string enemyName = enemy.enemyType.enemyName;
+                        if (string.IsNullOrEmpty(enemyName)) enemyName = enemy.gameObject.name.Replace("(Clone)", "").Trim();
+
+                        string healthStatus;
+                        if (enemy.isEnemyDead)
+                        {
+                            healthStatus = "0 (Dead)";
+                        }
+                        else if (enemy.enemyHP <= 0)
+                        {
+                            healthStatus = "Immortal";
+                        }
+                        else
+                        {
+                            healthStatus = enemy.enemyHP.ToString();
+                        }
+
+                        enemyLogs.Add($"- {enemyName}, HP: {healthStatus}");
+
+                        totalSpawnedCreatures++;
+                        if (!globalCreaturesSpawned.ContainsKey(enemyName)) globalCreaturesSpawned[enemyName] = 0;
+                        globalCreaturesSpawned[enemyName]++;
                     }
                 }
 
-                int totalItemsCount = 0;
-                foreach (var pair in planetScrapCounts)
-                {
-                    totalItemsCount += pair.Value;
-                }
+                if (currentPlanetScrap.Count == 0 && currentPlanetShopLogs.Count == 0 && enemyLogs.Count == 0 && currentPlanetDamageLogs.Count == 0 && currentPlanetDeathLogs.Count == 0 && currentPlanetFightLogs.Count == 0) return;
 
-                if (totalItemsCount > 0)
+                if (StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null)
                 {
-                    File.AppendAllText(logFilePath, "[PLANET INFO]" + Environment.NewLine);
-                    foreach (var pair in planetScrapCounts)
+                    string planetName = StartOfRound.Instance.currentLevel.PlanetName;
+                    string weather = StartOfRound.Instance.currentLevel.currentWeather.ToString();
+
+                    if (string.IsNullOrEmpty(planetName)) planetName = "Undefined";
+
+                    totalRoutes++;
+                    if (!globalRoutes.ContainsKey(planetName)) globalRoutes[planetName] = 0;
+                    globalRoutes[planetName]++;
+
+                    totalWeathers++;
+                    if (!globalWeathers.ContainsKey(weather)) globalWeathers[weather] = 0;
+                    globalWeathers[weather]++;
+
+                    int totalScrapValue = 0;
+                    foreach (int value in currentPlanetValues)
                     {
-                        string itemName = pair.Key;
-                        int count = pair.Value;
-                        int value = planetScrapValues[itemName];
-
-                        string countSuffix = count > 1 ? $" x{count}" : "";
-                        File.AppendAllText(logFilePath, $"{itemName}{countSuffix} - cost ({value})" + Environment.NewLine);
+                        totalScrapValue += value;
                     }
-                }
 
-                string summaryLine = $"[SCRAP VALUE] Total: {planetScrapTotal}\n[SPENDING] Total: {planetSpendingTotal}";
-                File.AppendAllText(logFilePath, summaryLine + Environment.NewLine);
+                    StringBuilder sb = new StringBuilder(2048);
 
-                if (totalItemsCount > 0)
-                {
-                    File.AppendAllText(logFilePath, "[SCRAP FIND %]" + Environment.NewLine);
-                    foreach (var pair in planetScrapCounts)
+                    if (hasLoggedFirstEntry)
                     {
-                        string itemName = pair.Key;
-                        int count = pair.Value;
-
-                        float findPercentage = ((float)count * 100f) / (float)totalItemsCount;
-                        string formattedPercent = findPercentage.ToString("F1", CultureInfo.InvariantCulture);
-
-                        File.AppendAllText(logFilePath, $"{itemName}: {formattedPercent}%" + Environment.NewLine);
+                        sb.Append(Environment.NewLine);
                     }
+
+                    sb.Append($"PLANET_NAME: {planetName}{Environment.NewLine}WEATHER: {weather}{Environment.NewLine}");
+                    sb.Append($"--------------------------------{Environment.NewLine}SCRAP (${totalScrapValue}):");
+
+                    if (currentPlanetScrap.Count > 0)
+                    {
+                        foreach (string scrapInfo in currentPlanetScrap)
+                        {
+                            sb.Append(Environment.NewLine).Append(scrapInfo);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(Environment.NewLine).Append("- No scrap collected");
+                    }
+
+                    if (currentPlanetShopLogs.Count > 0)
+                    {
+                        sb.Append($"{Environment.NewLine}SHOP - CREDITS ({initialCreditsBeforePurchase}):");
+                        foreach (string shopInfo in currentPlanetShopLogs)
+                        {
+                            sb.Append(Environment.NewLine).Append(shopInfo);
+                        }
+                    }
+
+                    sb.Append($"{Environment.NewLine}CREATURES ({enemyLogs.Count}):");
+                    if (enemyLogs.Count > 0)
+                    {
+                        foreach (string enemyInfo in enemyLogs)
+                        {
+                            sb.Append(Environment.NewLine).Append(enemyInfo);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(Environment.NewLine).Append("- No creatures encountered");
+                    }
+
+                    sb.Append($"{Environment.NewLine}DAMAGE TAKEN:");
+                    if (currentPlanetDamageLogs.Count > 0)
+                    {
+                        foreach (string damageInfo in currentPlanetDamageLogs)
+                        {
+                            sb.Append(Environment.NewLine).Append(damageInfo);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append($"{Environment.NewLine}- No damage taken");
+                    }
+
+                    sb.Append($"{Environment.NewLine}DEATHS ({currentPlanetDeathLogs.Count}):");
+                    if (currentPlanetDeathLogs.Count > 0)
+                    {
+                        foreach (string deathInfo in currentPlanetDeathLogs)
+                        {
+                            sb.Append(Environment.NewLine).Append(deathInfo);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append($"{Environment.NewLine}- No deaths");
+                    }
+
+                    sb.Append($"{Environment.NewLine}FIGHTS:");
+                    if (currentPlanetFightLogs.Count > 0)
+                    {
+                        foreach (string fightInfo in currentPlanetFightLogs)
+                        {
+                            sb.Append(Environment.NewLine).Append(fightInfo);
+                        }
+                    }
+                    else
+                    {
+                        sb.Append($"{Environment.NewLine}- No fights occurred");
+                    }
+
+                    sb.Append($"{Environment.NewLine}GLOBAL:{Environment.NewLine}----------------------------------{Environment.NewLine}ROUTING INFO:");
+                    foreach (var route in globalRoutes)
+                    {
+                        int rate = totalRoutes > 0 ? Mathf.RoundToInt((float)route.Value / totalRoutes * 100f) : 0;
+                        sb.Append($"{Environment.NewLine}- {route.Key}, route rate: {rate}%");
+                    }
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}WEATHER INFO:");
+                    foreach (var w in globalWeathers)
+                    {
+                        int rate = totalWeathers > 0 ? Mathf.RoundToInt((float)w.Value / totalWeathers * 100f) : 0;
+                        sb.Append($"{Environment.NewLine}- {w.Key}, weather rate: {rate}%");
+                    }
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}SCRAP INFO:");
+                    if (globalScrapPicks.Count > 0)
+                    {
+                        foreach (var scrap in globalScrapPicks)
+                        {
+                            int rate = totalScrapPicks > 0 ? Mathf.RoundToInt((float)scrap.Value / totalScrapPicks * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {scrap.Key}, pick rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}SHOP INFO:");
+                    if (globalShopPurchases.Count > 0)
+                    {
+                        foreach (var shopItem in globalShopPurchases)
+                        {
+                            int rate = totalShopPurchases > 0 ? Mathf.RoundToInt((float)shopItem.Value / totalShopPurchases * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {shopItem.Key}, buy rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}CREATURES INFO:");
+                    if (globalCreaturesSpawned.Count > 0)
+                    {
+                        foreach (var creature in globalCreaturesSpawned)
+                        {
+                            int rate = totalSpawnedCreatures > 0 ? Mathf.RoundToInt((float)creature.Value / totalSpawnedCreatures * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {creature.Key}, spawn rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}DAMAGE INFO:");
+                    if (globalDamageLogs.Count > 0)
+                    {
+                        foreach (var dmg in globalDamageLogs)
+                        {
+                            int rate = totalDamageEvents > 0 ? Mathf.RoundToInt((float)dmg.Value / totalDamageEvents * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {dmg.Key} - damage rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}DEATHS INFO:");
+                    if (globalDeaths.Count > 0)
+                    {
+                        foreach (var death in globalDeaths)
+                        {
+                            int rate = totalDeathEvents > 0 ? Mathf.RoundToInt((float)death.Value / totalDeathEvents * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {death.Key}, death rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append($"{Environment.NewLine}{Environment.NewLine}FIGHTS INFO:");
+                    if (globalFights.Count > 0)
+                    {
+                        foreach (var fight in globalFights)
+                        {
+                            int rate = totalHitEvents > 0 ? Mathf.RoundToInt((float)fight.Value / totalHitEvents * 100f) : 0;
+                            sb.Append($"{Environment.NewLine}- {fight.Key}, hit rate: {rate}%");
+                        }
+                    }
+                    else sb.Append($"{Environment.NewLine}- No data");
+
+                    sb.Append(Environment.NewLine);
+
+                    File.AppendAllText(logFilePath, sb.ToString());
+                    hasLoggedFirstEntry = true;
+
+                    ResetScrapList();
                 }
-
-                currentPlanetShopLogs.Clear();
-                planetSpendingTotal = 0;
-
-                CalculateGlobalStats();
             }
-            catch (Exception ex)
+            catch (Exception) { }
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerControllerB), "GrabObjectServerRpc")]
+    public class LALoggerGrabObjectPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(PlayerControllerB __instance, NetworkObjectReference grabbedObject)
+        {
+            if (grabbedObject.TryGet(out NetworkObject networkObject))
             {
+                if (networkObject != null)
+                {
+                    GrabbableObject component = networkObject.GetComponent<GrabbableObject>();
+                    if (component != null)
+                    {
+                        if (component.playerHeldBy == null) component.playerHeldBy = __instance;
+
+                        LA_Logger.LogPickedUpScrap(component);
+                    }
+                }
             }
         }
+    }
 
-        private static void CalculateGlobalStats()
+    [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayer")]
+    public class LALoggerPlayerDamagePatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(PlayerControllerB __instance, int damageNumber, CauseOfDeath causeOfDeath, bool fallDamage)
         {
             try
             {
-                if (!File.Exists(logFilePath)) return;
+                if (__instance == null || !__instance.isPlayerControlled) return;
 
-                string entireFile = File.ReadAllText(logFilePath);
-
-                int globalBlockIndex = entireFile.IndexOf("========================================\n[GLOBAL LIFETIME STATS]");
-                if (globalBlockIndex != -1)
+                int actualDamage = damageNumber;
+                if (actualDamage > __instance.health)
                 {
-                    entireFile = entireFile.Substring(0, globalBlockIndex);
+                    actualDamage = __instance.health;
                 }
 
-                long totalShopSpending = 0;
-                long totalScrapValue = 0;
+                string sourceName = "Unknown";
+                string enemyName = "None";
 
-                Dictionary<string, int> globalScrapCounts = new Dictionary<string, int>();
-                Dictionary<string, int> globalPlanetCounts = new Dictionary<string, int>();
-                Dictionary<string, int> globalShopCounts = new Dictionary<string, int>();
-
-                int totalGlobalScrapCount = 0;
-                int totalGlobalPlanetCount = 0;
-                int totalGlobalShopCount = 0;
-
-                string[] lines = entireFile.Split(new[] { Environment.NewLine, "\n" }, StringSplitOptions.None);
-
-                foreach (string line in lines)
+                if (fallDamage)
                 {
-                    if (line.StartsWith("Planet: "))
+                    sourceName = "Fall Damage";
+                }
+                else if (causeOfDeath != CauseOfDeath.Unknown)
+                {
+                    sourceName = causeOfDeath.ToString();
+                }
+
+                bool isMeleeCause = causeOfDeath == CauseOfDeath.Mauling || causeOfDeath == CauseOfDeath.Bludgeoning ||
+                                     causeOfDeath == CauseOfDeath.Strangulation || causeOfDeath == CauseOfDeath.Crushing;
+
+                if (isMeleeCause)
+                {
+                    EnemyAI closestEnemy = LA_Logger.FindClosestEnemy(__instance.transform.position, 5f);
+                    if (closestEnemy != null && closestEnemy.enemyType != null)
                     {
-                        string planet = line.Replace("Planet: ", "").Trim();
-                        if (!string.IsNullOrEmpty(planet) && planet != "Undefined")
-                        {
-                            globalPlanetCounts[planet] = globalPlanetCounts.ContainsKey(planet) ? globalPlanetCounts[planet] + 1 : 1;
-                            totalGlobalPlanetCount++;
-                        }
-                    }
-
-                    if (line.StartsWith("[SHOP] "))
-                    {
-                        var match = Regex.Match(line, @"\[SHOP\]\s+(.+?)\s+-\s+cost\s+\((\d+)\)");
-                        if (match.Success)
-                        {
-                            string itemName = match.Groups[1].Value.Trim();
-                            int cost = int.Parse(match.Groups[2].Value);
-
-                            totalShopSpending += cost;
-                            globalShopCounts[itemName] = globalShopCounts.ContainsKey(itemName) ? globalShopCounts[itemName] + 1 : 1;
-                            totalGlobalShopCount++;
-                        }
-                    }
-
-                    if (line.StartsWith("[SCRAP VALUE] Total: "))
-                    {
-                        var match = Regex.Match(line, @"\[SCRAP VALUE\] Total:\s+(\d+)");
-                        if (match.Success)
-                        {
-                            totalScrapValue += int.Parse(match.Groups[1].Value);
-                        }
-                    }
-
-                    if (line.Contains(" - cost (") && !line.StartsWith("[SHOP]") && !line.StartsWith("[SCRAP") && !line.StartsWith("Day:"))
-                    {
-                        var match = Regex.Match(line, @"^\s*(.+?)(?:\s+x(\d+))?\s+-\s+cost");
-                        if (match.Success)
-                        {
-                            string itemName = match.Groups[1].Value.Trim();
-                            int count = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1;
-
-                            globalScrapCounts[itemName] = globalScrapCounts.ContainsKey(itemName) ? globalScrapCounts[itemName] + count : count;
-                            totalGlobalScrapCount += count;
-                        }
+                        enemyName = LA_Logger.GetEnemyDisplayName(closestEnemy);
                     }
                 }
 
-                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.AppendLine("========================================");
-                sb.AppendLine("[GLOBAL LIFETIME STATS]");
-                sb.AppendLine($"[TOTAL SHOP SPENDING]: {totalShopSpending}");
-                sb.AppendLine($"[TOTAL SCRAP VALUE]: {totalScrapValue}");
+                LA_Logger.LogPlayerDamage(__instance.playerUsername, actualDamage, sourceName, enemyName);
 
-                sb.AppendLine("[TOTAL SCRAP FIND %]");
-                if (totalGlobalScrapCount > 0)
+                if (causeOfDeath == CauseOfDeath.Bludgeoning && !__instance.isPlayerDead)
                 {
-                    foreach (var pair in globalScrapCounts)
+                    PlayerControllerB attacker = FindClosestAttacker(__instance, 3.5f);
+                    if (attacker != null)
                     {
-                        float percent = (pair.Value * 100f) / totalGlobalScrapCount;
-                        sb.AppendLine($"  {pair.Key}: {percent.ToString("F1", CultureInfo.InvariantCulture)}%");
+                        int duration = LA_Logger.UpdateAndGetFightDuration(attacker.playerUsername, __instance.playerUsername);
+                        int hpLeft = __instance.health - actualDamage;
+                        string remainingHP = hpLeft <= 0 ? "0 (Dead)" : hpLeft.ToString();
+
+                        LA_Logger.LogPlayerAttack(attacker.playerUsername, actualDamage, __instance.playerUsername, duration, remainingHP);
                     }
                 }
-                else sb.AppendLine("  No scrap collected yet.");
-
-                sb.AppendLine("[TOTAL PLANET ROUTING %]");
-                if (totalGlobalPlanetCount > 0)
-                {
-                    foreach (var pair in globalPlanetCounts)
-                    {
-                        float percent = (pair.Value * 100f) / totalGlobalPlanetCount;
-                        sb.AppendLine($"  {pair.Key}: {percent.ToString("F1", CultureInfo.InvariantCulture)}%");
-                    }
-                }
-                else sb.AppendLine("  No planets visited yet.");
-
-                sb.AppendLine("[TOTAL SHOP USES %]");
-                if (totalGlobalShopCount > 0)
-                {
-                    foreach (var pair in globalShopCounts)
-                    {
-                        float percent = (pair.Value * 100f) / totalGlobalShopCount;
-                        sb.AppendLine($"  {pair.Key}: {percent.ToString("F1", CultureInfo.InvariantCulture)}%");
-                    }
-                }
-                else sb.AppendLine("  No shop items purchased yet.");
-
-                File.WriteAllText(logFilePath, entireFile + sb.ToString());
             }
-            catch (Exception)
+            catch (Exception) { }
+        }
+
+        private static PlayerControllerB FindClosestAttacker(PlayerControllerB victim, float maxDistance)
+        {
+            PlayerControllerB[] allPlayers = StartOfRound.Instance?.allPlayerScripts;
+            if (allPlayers == null) return null;
+
+            foreach (var p in allPlayers)
             {
+                if (p != null && p.isPlayerControlled && !p.isPlayerDead && p != victim)
+                {
+                    if (Vector3.Distance(p.transform.position, victim.transform.position) < maxDistance)
+                    {
+                        return p;
+                    }
+                }
             }
-        }
 
-        public static void Initialize() { }
-    }
-
-    [HarmonyPatch(typeof(StartOfRound), "StartGame")]
-    public class LALoggerDayInfoPatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix()
-        {
-            LA_Logger.LogDayInfo();
+            return null;
         }
     }
 
-    [HarmonyPatch(typeof(GrabbableObject), "GrabItemOnClient")]
-    public class LALoggerGrabObjectPatch
+    [HarmonyPatch(typeof(PlayerControllerB), "KillPlayer")]
+    public class LALoggerPlayerKillPatch
     {
-        [HarmonyPostfix]
-        public static void Postfix(GrabbableObject __instance)
+        [HarmonyPrefix]
+        public static void Prefix(PlayerControllerB __instance, CauseOfDeath causeOfDeath)
         {
-            LA_Logger.LogPickedUpScrap(__instance);
-        }
-    }
+            try
+            {
+                if (__instance == null || !__instance.isPlayerControlled || __instance.isPlayerDead) return;
 
-    [HarmonyPatch(typeof(StartOfRound), "ShipLeave")]
-    public class LALoggerRoundEndPatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix()
-        {
-            LA_Logger.LogPlanetSummary();
+                string deathTime = "00:00 AM";
+                if (HUDManager.Instance != null && HUDManager.Instance.clockNumber != null)
+                {
+                    deathTime = HUDManager.Instance.clockNumber.text.Replace("\n", " ").Trim();
+                }
+
+                string location = __instance.isInsideFactory ? "Inside" : "Outside";
+
+                string causeText = causeOfDeath.ToString();
+                if (causeOfDeath == CauseOfDeath.Drowning || __instance.isUnderwater)
+                {
+                    causeText = "Underwater";
+                }
+
+                if (causeOfDeath == CauseOfDeath.Mauling || causeOfDeath == CauseOfDeath.Bludgeoning ||
+    causeOfDeath == CauseOfDeath.Strangulation || causeOfDeath == CauseOfDeath.Crushing)
+                {
+                    EnemyAI closestEnemy = LA_Logger.FindClosestEnemy(__instance.transform.position, 8f);
+
+                    if (closestEnemy != null && closestEnemy.enemyType != null)
+                    {
+                        string enemyName = LA_Logger.GetEnemyDisplayName(closestEnemy);
+                        causeText = $"{causeText} - {enemyName}";
+                    }
+                }
+
+                LA_Logger.LogPlayerDeath(__instance.playerUsername, deathTime, location, causeText);
+            }
+            catch (Exception) { }
         }
     }
 
@@ -365,6 +704,7 @@ namespace LA_Changeloger
     public class LALoggerTerminalShopPatch
     {
         private static int previousCartCount = 0;
+        private static int creditsBeforeConfirm = 0;
 
         [HarmonyPrefix]
         public static void Prefix(Terminal __instance, TerminalNode node)
@@ -376,7 +716,7 @@ namespace LA_Changeloger
                 if (node != null && node.isConfirmationNode)
                 {
                     previousCartCount = __instance.orderedItemsFromTerminal.Count;
-                    return;
+                    creditsBeforeConfirm = __instance.groupCredits; return;
                 }
 
                 if (__instance.currentNode != null && __instance.currentNode.isConfirmationNode)
@@ -385,38 +725,71 @@ namespace LA_Changeloger
 
                     if (currentCount > previousCartCount)
                     {
-                        for (int i = previousCartCount; i < currentCount; i++)
+                        int exactSpentCredits = creditsBeforeConfirm - __instance.groupCredits;
+
+                        if (exactSpentCredits > 0)
                         {
-                            int itemIndex = __instance.orderedItemsFromTerminal[i];
+                            int itemsCount = currentCount - previousCartCount;
 
-                            if (__instance.buyableItemsList != null && itemIndex >= 0 && itemIndex < __instance.buyableItemsList.Length)
+                            int exactCostPerItem = exactSpentCredits / Mathf.Max(1, itemsCount);
+                            int runningCredits = creditsBeforeConfirm;
+
+                            for (int i = previousCartCount; i < currentCount; i++)
                             {
-                                Item shopItem = __instance.buyableItemsList[itemIndex];
-                                if (shopItem != null)
+                                int itemIndex = __instance.orderedItemsFromTerminal[i];
+                                if (__instance.buyableItemsList != null && itemIndex >= 0 && itemIndex < __instance.buyableItemsList.Length)
                                 {
-                                    string name = shopItem.itemName;
-                                    int price = shopItem.creditsWorth;
-
-                                    int finalCost = price;
-                                    if (__instance.itemSalesPercentages != null && itemIndex < __instance.itemSalesPercentages.Length)
+                                    Item shopItem = __instance.buyableItemsList[itemIndex];
+                                    if (shopItem != null)
                                     {
-                                        finalCost = Mathf.RoundToInt((float)price * ((float)__instance.itemSalesPercentages[itemIndex] / 100f));
+                                        string name = shopItem.itemName;
+                                        int creditsAfter = runningCredits - exactCostPerItem;
+                                        if (creditsAfter < 0) creditsAfter = 0;
+
+                                        LA_Logger.LogShopPurchase(name, exactCostPerItem, runningCredits, creditsAfter);
+                                        runningCredits = creditsAfter;
                                     }
-
-                                    int actualRemainingCredits = __instance.groupCredits;
-
-                                    LA_Logger.LogShopPurchase(name, finalCost, actualRemainingCredits);
                                 }
                             }
                         }
                     }
-
                     previousCartCount = currentCount;
                 }
             }
-            catch (Exception)
+            catch (Exception) { }
+        }
+    }
+
+    [HarmonyPatch(typeof(EnemyAI), "HitEnemy")]
+    public class LALoggerHitEnemyPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(EnemyAI __instance, int force, PlayerControllerB playerWhoHit)
+        {
+            try
             {
+                if (__instance == null || playerWhoHit == null || __instance.isEnemyDead) return;
+
+                string targetMonsterName = LA_Logger.GetEnemyDisplayName(__instance);
+
+                int duration = LA_Logger.UpdateAndGetFightDuration(playerWhoHit.playerUsername, targetMonsterName);
+
+                int hpLeft = __instance.enemyHP - force;
+                string remainingHP = hpLeft <= 0 ? "0 (Dead)" : hpLeft.ToString();
+
+                LA_Logger.LogPlayerAttack(playerWhoHit.playerUsername, force, targetMonsterName, duration, remainingHP);
             }
+            catch (Exception) { }
+        }
+    }
+
+    [HarmonyPatch(typeof(StartOfRound), "ShipLeave")]
+    public class LALoggerRoundEndPatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
+            LA_Logger.LogPlanetSummary();
         }
     }
 }
