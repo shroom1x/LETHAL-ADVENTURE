@@ -1,3 +1,12 @@
+Version 1.4.2:
+
+• Fixed an issue where players could enter melee mode while holding an item, including two-handed items.
+
+• Some one-handed and two-handed scrap items have been rebalanced.
+
+• Defeating the 'Aloe' entity now provides a reward.
+
+
 Version 1.4.1:
 
 • Fixed a bug that displayed negative required quota values on the monitor.
