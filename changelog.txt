@@ -1,3 +1,8 @@
+Version 1.4.3:
+
+• Unique blood colors have been added for Hoarding Bug, Snare Flea, Eyeless Dog, Spider, Thumper, Baboon Hawk, Tulip Snake, and Manticoil when damaged.
+
+
 Version 1.4.2:
 
 • Fixed an issue where players could enter melee mode while holding an item, including two-handed items.
