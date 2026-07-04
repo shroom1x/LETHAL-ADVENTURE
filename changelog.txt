@@ -1,3 +1,8 @@
+Version 1.6.0:
+
+• Rebalanced the weight and price for all items. Some one-handed items have been changed to two-handed, while some two-handed items became one-handed.
+
+
 Version 1.5.0:
 
 • Integrated the 'CodeRebirth' mod for expanded content.
