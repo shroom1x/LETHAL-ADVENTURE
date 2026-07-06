@@ -1,3 +1,13 @@
+Version 1.6.1:
+
+• Fixed an issue where one of the giants would continuously slam the ground.
+
+• Added new interior variations inside the facility.
+
+• Increased the spawn rate of the crane.
+• Rebalanced the spawn rates for certain interior variations.
+
+
 Version 1.6.0:
 
 • Rebalanced the weight and price for all items. Some one-handed items have been changed to two-handed, while some two-handed items became one-handed.
