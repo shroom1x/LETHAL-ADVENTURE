@@ -1,3 +1,14 @@
+Version 1.7.0:
+
+• Decreased the price of the Signal Translator in the Ship Upgrades list.
+• Rebalanced all moons, including vanilla ones.
+
+• Added price information next to the moon names.
+• Added a 'DEADLINES' command to the terminal for quick access to the deadline extension menu.
+
+• The 'SecretLabs' moon has been removed.
+
+
 Version 1.6.1:
 
 • Fixed an issue where one of the giants would continuously slam the ground.
