@@ -1,3 +1,8 @@
+Version 1.7.1:
+
+• Fixed a bug causing the terminal to become unresponsive when closing it with the deadline extension UI open.
+
+
 Version 1.7.0:
 
 • Decreased the price of the Signal Translator in the Ship Upgrades list.
