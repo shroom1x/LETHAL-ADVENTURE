@@ -1,3 +1,10 @@
+Version 1.7.2:
+
+• Added the new 'Rocket Launcher' weapon to the 'STORE' menu.
+
+• Increased the cost of 'Item Duplicator' and 'Back Muscles' upgrades.
+
+
 Version 1.7.1:
 
 • Fixed an issue causing the terminal to become unresponsive when closing it with the deadline extension UI open.
