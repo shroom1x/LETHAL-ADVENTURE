@@ -1,3 +1,11 @@
+Version 1.7.3:
+
+• Reward for eliminating 'Forest Keeper' has been reduced from 2550 to 750.
+• Monsters killed by landmines inside the facility now only grant a reward if you placed the mine or were nearby during the blast.
+
+• Monster elimination notifications have been changed to make the cause clear.
+
+
 Version 1.7.2:
 
 • Added the new 'Rocket Launcher' weapon to the 'STORE' menu.
