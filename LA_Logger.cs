@@ -35,6 +35,7 @@ namespace LA_Changeloger
     public static class LA_Logger
     {
         private static string logFilePath;
+        private static string statsFilePath;
         private static bool hasLoggedFirstEntry = false;
 
         private static List<string> currentPlanetScrap = new List<string>();
@@ -138,8 +139,19 @@ namespace LA_Changeloger
                 }
 
                 logFilePath = Path.Combine(logsFolderPath, "log.txt");
-                File.WriteAllText(logFilePath, string.Empty);
-                hasLoggedFirstEntry = false;
+                statsFilePath = Path.Combine(logsFolderPath, "global_stats.txt");
+
+                if (!File.Exists(logFilePath))
+                {
+                    File.WriteAllText(logFilePath, string.Empty);
+                    hasLoggedFirstEntry = false;
+                }
+                else
+                {
+                    hasLoggedFirstEntry = new FileInfo(logFilePath).Length > 0;
+                }
+
+                LoadGlobalStats();
             }
             catch (Exception) { }
         }
@@ -162,6 +174,118 @@ namespace LA_Changeloger
             currentPlanetFightLogs.Clear();
 
             activeFights.Clear();
+        }
+
+        private static void LoadIntoDictionary(string key, string prefix, Dictionary<string, int> dict, int value)
+        {
+            if (!key.StartsWith(prefix)) return;
+            string name = key.Substring(prefix.Length);
+            dict[name] = value;
+        }
+
+        private static void LoadGlobalStats()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(statsFilePath) || !File.Exists(statsFilePath)) return;
+
+                foreach (string rawLine in File.ReadAllLines(statsFilePath))
+                {
+                    string line = rawLine.Trim();
+                    if (string.IsNullOrEmpty(line)) continue;
+
+                    int splitIndex = line.IndexOf('=');
+                    if (splitIndex < 0) continue;
+
+                    string key = line.Substring(0, splitIndex);
+                    string valueText = line.Substring(splitIndex + 1);
+
+                    if (!int.TryParse(valueText, out int value)) continue;
+
+                    switch (key)
+                    {
+                        case "TOTAL_ROUTES": totalRoutes = value; continue;
+                        case "TOTAL_WEATHERS": totalWeathers = value; continue;
+                        case "TOTAL_SCRAP_PICKS": totalScrapPicks = value; continue;
+                        case "TOTAL_SHOP_PURCHASES": totalShopPurchases = value; continue;
+                        case "TOTAL_SPAWNED_CREATURES": totalSpawnedCreatures = value; continue;
+                        case "TOTAL_DAMAGE_EVENTS": totalDamageEvents = value; continue;
+                        case "TOTAL_DEATH_EVENTS": totalDeathEvents = value; continue;
+                        case "TOTAL_HIT_EVENTS": totalHitEvents = value; continue;
+                    }
+
+                    LoadIntoDictionary(key, "ROUTE:", globalRoutes, value);
+                    LoadIntoDictionary(key, "WEATHER:", globalWeathers, value);
+                    LoadIntoDictionary(key, "SCRAP:", globalScrapPicks, value);
+                    LoadIntoDictionary(key, "SHOP:", globalShopPurchases, value);
+                    LoadIntoDictionary(key, "CREATURE:", globalCreaturesSpawned, value);
+                    LoadIntoDictionary(key, "DAMAGE:", globalDamageLogs, value);
+                    LoadIntoDictionary(key, "DEATH:", globalDeaths, value);
+                    LoadIntoDictionary(key, "FIGHT:", globalFights, value);
+                }
+            }
+            catch (Exception) { }
+        }
+
+        private static void SaveGlobalStats()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(statsFilePath)) return;
+
+                StringBuilder sb = new StringBuilder(1024);
+
+                sb.Append($"TOTAL_ROUTES={totalRoutes}{Environment.NewLine}");
+                foreach (var kvp in globalRoutes) sb.Append($"ROUTE:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_WEATHERS={totalWeathers}{Environment.NewLine}");
+                foreach (var kvp in globalWeathers) sb.Append($"WEATHER:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_SCRAP_PICKS={totalScrapPicks}{Environment.NewLine}");
+                foreach (var kvp in globalScrapPicks) sb.Append($"SCRAP:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_SHOP_PURCHASES={totalShopPurchases}{Environment.NewLine}");
+                foreach (var kvp in globalShopPurchases) sb.Append($"SHOP:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_SPAWNED_CREATURES={totalSpawnedCreatures}{Environment.NewLine}");
+                foreach (var kvp in globalCreaturesSpawned) sb.Append($"CREATURE:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_DAMAGE_EVENTS={totalDamageEvents}{Environment.NewLine}");
+                foreach (var kvp in globalDamageLogs) sb.Append($"DAMAGE:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_DEATH_EVENTS={totalDeathEvents}{Environment.NewLine}");
+                foreach (var kvp in globalDeaths) sb.Append($"DEATH:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                sb.Append($"TOTAL_HIT_EVENTS={totalHitEvents}{Environment.NewLine}");
+                foreach (var kvp in globalFights) sb.Append($"FIGHT:{kvp.Key}={kvp.Value}{Environment.NewLine}");
+
+                File.WriteAllText(statsFilePath, sb.ToString());
+            }
+            catch (Exception) { }
+        }
+
+        private static void AppendRankedSection(StringBuilder sb, string title, Dictionary<string, int> data, int total, string rateLabel)
+        {
+            sb.Append($"{Environment.NewLine}{Environment.NewLine}{title}:");
+
+            if (data.Count > 0)
+            {
+                var sorted = new List<KeyValuePair<string, int>>(data);
+                sorted.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+                int maxValue = sorted[0].Value;
+
+                foreach (var kvp in sorted)
+                {
+                    int rate = total > 0 ? Mathf.RoundToInt((float)kvp.Value / total * 100f) : 0;
+                    string indent = kvp.Value == maxValue ? "        " : "";
+                    sb.Append($"{Environment.NewLine}{indent}- {kvp.Key}, {rateLabel}: {rate}%");
+                }
+            }
+            else
+            {
+                sb.Append($"{Environment.NewLine}- No data");
+            }
         }
 
         public static void LogPickedUpScrap(GrabbableObject scrapItem)
@@ -466,90 +590,23 @@ namespace LA_Changeloger
                         sb.Append($"{Environment.NewLine}- No fights occurred");
                     }
 
-                    sb.Append($"{Environment.NewLine}GLOBAL:{Environment.NewLine}----------------------------------{Environment.NewLine}ROUTING INFO:");
-                    foreach (var route in globalRoutes)
-                    {
-                        int rate = totalRoutes > 0 ? Mathf.RoundToInt((float)route.Value / totalRoutes * 100f) : 0;
-                        sb.Append($"{Environment.NewLine}- {route.Key}, route rate: {rate}%");
-                    }
+                    sb.Append($"{Environment.NewLine}GLOBAL:{Environment.NewLine}----------------------------------");
 
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}WEATHER INFO:");
-                    foreach (var w in globalWeathers)
-                    {
-                        int rate = totalWeathers > 0 ? Mathf.RoundToInt((float)w.Value / totalWeathers * 100f) : 0;
-                        sb.Append($"{Environment.NewLine}- {w.Key}, weather rate: {rate}%");
-                    }
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}SCRAP INFO:");
-                    if (globalScrapPicks.Count > 0)
-                    {
-                        foreach (var scrap in globalScrapPicks)
-                        {
-                            int rate = totalScrapPicks > 0 ? Mathf.RoundToInt((float)scrap.Value / totalScrapPicks * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {scrap.Key}, pick rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}SHOP INFO:");
-                    if (globalShopPurchases.Count > 0)
-                    {
-                        foreach (var shopItem in globalShopPurchases)
-                        {
-                            int rate = totalShopPurchases > 0 ? Mathf.RoundToInt((float)shopItem.Value / totalShopPurchases * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {shopItem.Key}, buy rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}CREATURES INFO:");
-                    if (globalCreaturesSpawned.Count > 0)
-                    {
-                        foreach (var creature in globalCreaturesSpawned)
-                        {
-                            int rate = totalSpawnedCreatures > 0 ? Mathf.RoundToInt((float)creature.Value / totalSpawnedCreatures * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {creature.Key}, spawn rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}DAMAGE INFO:");
-                    if (globalDamageLogs.Count > 0)
-                    {
-                        foreach (var dmg in globalDamageLogs)
-                        {
-                            int rate = totalDamageEvents > 0 ? Mathf.RoundToInt((float)dmg.Value / totalDamageEvents * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {dmg.Key} - damage rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}DEATHS INFO:");
-                    if (globalDeaths.Count > 0)
-                    {
-                        foreach (var death in globalDeaths)
-                        {
-                            int rate = totalDeathEvents > 0 ? Mathf.RoundToInt((float)death.Value / totalDeathEvents * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {death.Key}, death rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
-
-                    sb.Append($"{Environment.NewLine}{Environment.NewLine}FIGHTS INFO:");
-                    if (globalFights.Count > 0)
-                    {
-                        foreach (var fight in globalFights)
-                        {
-                            int rate = totalHitEvents > 0 ? Mathf.RoundToInt((float)fight.Value / totalHitEvents * 100f) : 0;
-                            sb.Append($"{Environment.NewLine}- {fight.Key}, hit rate: {rate}%");
-                        }
-                    }
-                    else sb.Append($"{Environment.NewLine}- No data");
+                    AppendRankedSection(sb, "ROUTING INFO", globalRoutes, totalRoutes, "route rate");
+                    AppendRankedSection(sb, "WEATHER INFO", globalWeathers, totalWeathers, "weather rate");
+                    AppendRankedSection(sb, "SCRAP INFO", globalScrapPicks, totalScrapPicks, "pick rate");
+                    AppendRankedSection(sb, "SHOP INFO", globalShopPurchases, totalShopPurchases, "buy rate");
+                    AppendRankedSection(sb, "CREATURES INFO", globalCreaturesSpawned, totalSpawnedCreatures, "spawn rate");
+                    AppendRankedSection(sb, "DAMAGE INFO", globalDamageLogs, totalDamageEvents, "damage rate");
+                    AppendRankedSection(sb, "DEATHS INFO", globalDeaths, totalDeathEvents, "death rate");
+                    AppendRankedSection(sb, "FIGHTS INFO", globalFights, totalHitEvents, "hit rate");
 
                     sb.Append(Environment.NewLine);
 
                     File.AppendAllText(logFilePath, sb.ToString());
                     hasLoggedFirstEntry = true;
+
+                    SaveGlobalStats();
 
                     ResetScrapList();
                 }
