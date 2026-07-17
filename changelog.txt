@@ -1,3 +1,14 @@
+Version 1.7.4:
+
+• Fixed the stamina bar: it now reflects your stamina much more accurately.
+• Fixed an issue where the terminal scan displayed an incorrect item count.
+
+• Added a loudness meter that displays how loud you are being.
+• Added support for up to 8 players.
+
+• The quota will now also increase based on the amount of scrap stored on your ship.
+
+
 Version 1.7.3:
 
 • Reward for eliminating 'Forest Keeper' has been reduced.
