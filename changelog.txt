@@ -8,6 +8,8 @@ Version 1.7.4:
 
 • The quota will now also increase based on the amount of scrap stored on your ship.
 
+• Disabled the SID (Single Item Day) event.
+
 
 Version 1.7.3:
 
