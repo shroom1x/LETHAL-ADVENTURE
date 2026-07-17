@@ -2,6 +2,7 @@ Version 1.7.4:
 
 • Fixed the stamina bar: it now reflects your stamina much more accurately.
 • Fixed an issue where the terminal scan displayed an incorrect item count.
+• Fixed an issue where Manticoils would start breakdancing after being killed.
 
 • Added a loudness meter that displays how loud you are being.
 • Added support for up to 8 players.
