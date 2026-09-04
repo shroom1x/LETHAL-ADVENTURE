@@ -1,3 +1,9 @@
+Version 1.7.5
+
+• Two-handed scrap items and valuables now have a higher selling price.
+• Scrap items from the 'TooManyItems' mod have also undergone changes.
+
+
 Version 1.7.4:
 
 • Fixed the stamina bar: it now reflects your stamina much more accurately.
@@ -69,7 +75,8 @@ Version 1.4.4:
 
 • Adjusted the new goal calculation system; overachieving a goal will now result in a much steeper increase for the next one.
 • Fire exits inside the facility will no longer spawn too close to each other in the same area.
-• Increased Aloe's health.
+
+• Health of the 'Aloe' creature has been increased so it can withstand more hits.
 
 
 Version 1.4.3:
@@ -124,7 +131,7 @@ Version 1.3.0:
 • Fixed a bug where the plunger dropped all items on the floor upon destruction and prevented players from picking them back up.
 • Fixed a bug where taxes were still calculated even after the ship traveled to planet Galetry.
 
-• Giant Kiwi's health has been significantly reduced.
+• 'Giant Kiwi' health was significantly reduced, as it could previously withstand a HUGE number of shotgun blasts.
 • The deadline extension cost calculation has been reworked and now scales based on the required quota.
 
 • Crew members can now significantly reduce the required quota by finishing the day with zero deaths.
@@ -151,7 +158,9 @@ Version 1.1.0:
 
 • Mine explosions now destroy employees' bodies (visual/sound effects pending).
 • Teleporter no longer teleports employees' bodies.
-• Teleporter cost decreased.
+
+• Price of the 'Teleporter' item has been halved to make it more accessible.
+
 • Shotgun no longer has default ammo loaded upon purchase.
 
 
@@ -164,8 +173,7 @@ Version 1.0.4:
 
 Version 1.0.3:
 
-• Death penalty for quota growth has been reduced.
-• Death penalty for terminal credits has been reduced.
+• The impact of the "Death Penalty" has been significantly reduced.
 
 
 Version 1.0.2:
@@ -175,8 +183,8 @@ Version 1.0.2:
 
 Version 1.0.1:
 
-• Turrets now has a chance to enter 'berserk' mode or shut down after being hit.
-• Turrets will also shut down for a longer period after berserking.
+• Turrets now have a chance to enter a "berserk" state.
+• Turrets can also be temporarily disabled with a hit (if you're lucky).
 • Replaced turret shutdown and startup sounds with default ones.
 
 • Adjusted the header display in the changelog menu.
