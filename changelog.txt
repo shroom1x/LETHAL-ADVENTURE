@@ -69,7 +69,7 @@ Version 1.4.4:
 
 • Adjusted the new goal calculation system; overachieving a goal will now result in a much steeper increase for the next one.
 • Fire exits inside the facility will no longer spawn too close to each other in the same area.
-• Increased Aloe's health from 4 to 8.
+• Increased Aloe's health.
 
 
 Version 1.4.3:
@@ -124,7 +124,7 @@ Version 1.3.0:
 • Fixed a bug where the plunger dropped all items on the floor upon destruction and prevented players from picking them back up.
 • Fixed a bug where taxes were still calculated even after the ship traveled to planet Galetry.
 
-• Giant Kiwi's health has been reduced from 28 to 5.
+• Giant Kiwi's health has been significantly reduced.
 • The deadline extension cost calculation has been reworked and now scales based on the required quota.
 
 • Crew members can now significantly reduce the required quota by finishing the day with zero deaths.
@@ -151,7 +151,7 @@ Version 1.1.0:
 
 • Mine explosions now destroy employees' bodies (visual/sound effects pending).
 • Teleporter no longer teleports employees' bodies.
-• Teleporter cost decreased from 375 to 190.
+• Teleporter cost decreased.
 • Shotgun no longer has default ammo loaded upon purchase.
 
 
@@ -164,8 +164,8 @@ Version 1.0.4:
 
 Version 1.0.3:
 
-• Death penalty for quota growth is now 6%, down from 25%.
-• Decreased the death penalty for terminal credits to 12%, down from 25%.
+• Death penalty for quota growth has been reduced.
+• Death penalty for terminal credits has been reduced.
 
 
 Version 1.0.2:
@@ -175,7 +175,7 @@ Version 1.0.2:
 
 Version 1.0.1:
 
-• Turrets now have a 50% chance to berserk or shut down after being hit.
+• Turrets now has a chance to enter 'berserk' mode or shut down after being hit.
 • Turrets will also shut down for a longer period after berserking.
 • Replaced turret shutdown and startup sounds with default ones.
 
