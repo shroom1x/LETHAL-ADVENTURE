@@ -1,3 +1,17 @@
+Version 1.7.6
+
+• Reduced the spawn rate of the following items: Fancy Painting, Sink, Fire Hydrant.
+
+• Changes have been made to movement mechanics: you now consume stamina when moving while carrying very heavy objects.
+
+• The list of moons is now sorted by price (from low to high), and moons that are unavailable due to insufficient credits are displayed in a very dim color.
+
+• Goal growth has increased.
+• Goal target increased for overachieving.
+
+• The "Aquatis" moon was moved to a higher tier, which significantly increased the route price.
+
+
 Version 1.7.5
 
 • Two-handed scrap items and valuables now have a higher selling price.
