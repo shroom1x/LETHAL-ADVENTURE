@@ -8,7 +8,7 @@ Version 1.7.6
 • Same changes also apply to the list of items from the store.
 
 • Goal growth has increased.
-• Goal target increased for overachieving.
+• Goal growth increased for overachieving.
 
 • The "Aquatis" moon was moved to a higher tier, which significantly increased the route price.
 
