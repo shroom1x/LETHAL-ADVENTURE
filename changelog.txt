@@ -1,3 +1,8 @@
+Version 1.15.1
+
+• Fixed an issue where the text in the changelog was not fully displayed.
+
+
 Version 1.15.0
 
 • Reduced the spawn rate of the following items: Fancy Painting, Sink, Fire Hydrant.
