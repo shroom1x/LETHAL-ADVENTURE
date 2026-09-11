@@ -184,7 +184,7 @@ namespace LA_Changeloger
                         RectTransform contentRect = contentTransform.GetComponent<RectTransform>();
                         if (contentRect != null)
                         {
-                            contentRect.sizeDelta = new Vector2(contentRect.sizeDelta.x, 4056.65f);
+                            contentRect.sizeDelta = new Vector2(contentRect.sizeDelta.x, 4116.65f);
                         }
                     }
 
