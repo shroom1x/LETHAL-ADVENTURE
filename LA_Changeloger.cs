@@ -178,6 +178,16 @@ namespace LA_Changeloger
                         activeNotification.gameObject.SetActive(false);
                     }
 
+                    Transform contentTransform = creditsPanelTransform.Find("Panel/Scroll View/Viewport/Content");
+                    if (contentTransform != null)
+                    {
+                        RectTransform contentRect = contentTransform.GetComponent<RectTransform>();
+                        if (contentRect != null)
+                        {
+                            contentRect.sizeDelta = new Vector2(contentRect.sizeDelta.x, 4026.65f);
+                        }
+                    }
+
                     TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
 
                     string onlineChangelog = await ModInfo.DownloadChangelogAsync();
