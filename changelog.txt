@@ -1,4 +1,4 @@
-Version 1.12.0
+Version 1.15.0
 
 • Reduced the spawn rate of the following items: Fancy Painting, Sink, Fire Hydrant.
 
@@ -13,13 +13,13 @@ Version 1.12.0
 • The "Aquatis" moon was moved to a higher tier, which significantly increased the route price.
 
 
-Version 1.7.5
+Version 1.14.1
 
 • Two-handed scrap items and valuables now have a higher selling price.
 • Scrap items from the 'TooManyItems' mod have also undergone changes.
 
 
-Version 1.7.4:
+Version 1.14.0:
 
 • Fixed the stamina bar: it now reflects your stamina much more accurately.
 • Fixed an issue where the terminal scan displayed an incorrect item count.
@@ -33,7 +33,7 @@ Version 1.7.4:
 • Disabled the SID (Single Item Day) event.
 
 
-Version 1.7.3:
+Version 1.13.1:
 
 • Reward for eliminating 'Forest Keeper' has been reduced.
 • Monsters killed by landmines inside the facility now only grant a reward if you placed the mine or were nearby during the blast.
@@ -41,19 +41,19 @@ Version 1.7.3:
 • Monster elimination notifications have been changed to make the cause clear.
 
 
-Version 1.7.2:
+Version 1.13.0:
 
 • Added the new 'Rocket Launcher' weapon to the 'STORE' menu.
 
 • Increased the cost of 'Item Duplicator' and 'Back Muscles' upgrades.
 
 
-Version 1.7.1:
+Version 1.12.1:
 
 • Fixed an issue causing the terminal to become unresponsive when closing it with the deadline extension UI open.
 
 
-Version 1.7.0:
+Version 1.12.0:
 
 • Decreased the price of the Signal Translator in the Ship Upgrades list.
 • Rebalanced all moons, including vanilla ones.
@@ -64,7 +64,7 @@ Version 1.7.0:
 • The 'SecretLabs' moon has been removed.
 
 
-Version 1.6.1:
+Version 1.11.0:
 
 • Fixed an issue where one of the giants would continuously slam the ground.
 
@@ -74,17 +74,17 @@ Version 1.6.1:
 • Rebalanced the spawn rates for certain interior variations.
 
 
-Version 1.6.0:
+Version 1.10.0:
 
 • Rebalanced the weight and price for all items. Some one-handed items have been changed to two-handed, while some two-handed items became one-handed.
 
 
-Version 1.5.0:
+Version 1.9.0:
 
 • Integrated the 'CodeRebirth' mod for expanded content.
 
 
-Version 1.4.4:
+Version 1.8.1:
 
 • Fixed an issue where some one-handed scrap items were priced the same as heavy two-handed ones.
 
@@ -94,12 +94,12 @@ Version 1.4.4:
 • Health of the 'Aloe' creature has been increased so it can withstand more hits.
 
 
-Version 1.4.3:
+Version 1.8.0:
 
 • Unique blood colors have been added for Hoarding Bug, Snare Flea, Eyeless Dog, Spider, Thumper, Baboon Hawk, Tulip Snake, and Manticoil when damaged.
 
 
-Version 1.4.2:
+Version 1.7.1:
 
 • Fixed an issue where players could enter melee mode while holding an item, including two-handed items.
 
@@ -107,7 +107,7 @@ Version 1.4.2:
 • Defeating the 'Aloe' entity now provides a reward.
 
 
-Version 1.4.1:
+Version 1.7.0:
 
 • Fixed a bug that displayed negative required quota values on the monitor.
 • Fixed an issue where goal completion and failure notifications were displayed on the Company Building and Galetry planets.
@@ -121,7 +121,7 @@ Version 1.4.1:
 • Updated the game data collection system.
 
 
-Version 1.4.0:
+Version 1.6.1:
 
 • Fixed an issue where the frame rate would drop significantly upon entering the ship.
 • Fixed tooltip display to show different text depending on conditions.
@@ -133,7 +133,7 @@ Version 1.4.0:
 • Terminal now features a new indicator showing your goal to complete.
 
 
-Version 1.3.1:
+Version 1.6.0:
 
 • Fixed an issue that prevented health from restoring above 100 while the 'Stimpack' buff was active.
 
@@ -141,7 +141,7 @@ Version 1.3.1:
 • Added new creatures from the Biodiversity mod, but they do not award money for defeating them yet.
 
 
-Version 1.3.0:
+Version 1.5.0:
 
 • Fixed a bug where the plunger dropped all items on the floor upon destruction and prevented players from picking them back up.
 • Fixed a bug where taxes were still calculated even after the ship traveled to planet Galetry.
@@ -154,19 +154,19 @@ Version 1.3.0:
 • The deposit desk no longer has a cooldown between placing items up for sale.
 
 
-Version 1.2.0:
+Version 1.4.0:
 
 • Added a new 'TAX' command to the terminal, allowing quota reduction.
 
 
-Version 1.1.1:
+Version 1.3.1:
 
 • All "Monster Samples" now have a 50% chance to drop after killing monsters.
 • The price of the sample from Manticoil has been significantly reduced.
 • Tulip Snake will no longer drop a sample.
 
 
-Version 1.1.0:
+Version 1.3.0:
 
 • Fixed an issue where the reward was not credited after eliminating the 'Bracken' enemy.
 • Fixed an issue where weather conditions were displayed incorrectly in the terminal.
@@ -179,24 +179,24 @@ Version 1.1.0:
 • Shotgun no longer has default ammo loaded upon purchase.
 
 
-Version 1.0.4:
+Version 1.2.2:
 
 • Improved plunger hit registration on various surfaces.
 • Fixed audio and hit synchronization for the plunger.
 • The plunger now has a battery-based durability indicator (this is a temporary solution).
 
 
-Version 1.0.3:
+Version 1.2.1:
 
 • The impact of the "Death Penalty" has been significantly reduced.
 
 
-Version 1.0.2:
+Version 1.2.0:
 
 • Plunger now has durability and can break (except when hitting monsters).
 
 
-Version 1.0.1:
+Version 1.1.0:
 
 • Turrets now have a chance to enter a "berserk" state.
 • Turrets can also be temporarily disabled with a hit (if you're lucky).
