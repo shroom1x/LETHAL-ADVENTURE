@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using TMPro;
@@ -12,35 +12,52 @@ namespace LA_Changeloger
 {
     public static class ModInfo
     {
-        private static string cachedVersion;
+        private static string cachedLocalVersion;
+        private static string cachedLatestVersion;
 
         private const string GithubUser = "shroom1x";
         private const string GithubRepo = "LETHAL-ADVENTURE";
 
-        public static string GetVersion()
+        public static string GetLocalVersion()
         {
-            if (string.IsNullOrEmpty(cachedVersion))
+            if (string.IsNullOrEmpty(cachedLocalVersion))
             {
                 Version version = Assembly.GetExecutingAssembly().GetName().Version;
-                cachedVersion = $"{version.Major}.{version.Minor}.{version.Build}";
+                cachedLocalVersion = $"{version.Major}.{version.Minor}.{version.Build}";
             }
-            return cachedVersion;
+            return cachedLocalVersion;
         }
 
-        public static bool IsFutureVersion(string line, Version currentVersion)
+        public static async Task<string> GetLatestVersionAsync()
         {
-            if (line.StartsWith("Version ", StringComparison.OrdinalIgnoreCase) && line.Contains(":"))
-            {
-                try
-                {
-                    string verStr = line.Replace("Version ", "").Replace(":", "").Trim();
-                    Version fileVersion = new Version(verStr);
+            if (!string.IsNullOrEmpty(cachedLatestVersion))
+                return cachedLatestVersion;
 
-                    if (fileVersion > currentVersion) return true;
+            string url = $"https://raw.githubusercontent.com/{GithubUser}/{GithubRepo}/main/changelog.txt";
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    string rawText = await client.GetStringAsync(url);
+                    using (StringReader reader = new StringReader(rawText))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (line.StartsWith("Version ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string verStr = line.Replace("Version ", "").Replace(":", "").Trim();
+                                cachedLatestVersion = verStr;
+                                return cachedLatestVersion;
+                            }
+                        }
+                    }
                 }
-                catch { }
             }
-            return false;
+            catch { }
+
+            return GetLocalVersion();
         }
 
         public static async Task<string> DownloadChangelogAsync()
@@ -49,38 +66,15 @@ namespace LA_Changeloger
 
             try
             {
-                using (WebClient client = new WebClient())
+                using (HttpClient client = new HttpClient())
                 {
-                    string rawText = await client.DownloadStringTaskAsync(new Uri(url));
-
-                    Version currentVersion = new Version(GetVersion());
-
-                    using (StringReader reader = new StringReader(rawText))
-                    using (StringWriter writer = new StringWriter())
-                    {
-                        string line;
-                        bool skipMode = false;
-
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            if (line.StartsWith("Version ", StringComparison.OrdinalIgnoreCase) && line.Contains(":"))
-                            {
-                                skipMode = IsFutureVersion(line, currentVersion);
-                            }
-
-                            if (!skipMode)
-                            {
-                                writer.WriteLine(line);
-                            }
-                        }
-
-                        return writer.ToString().Trim();
-                    }
+                    string rawText = await client.GetStringAsync(url);
+                    return rawText.Trim();
                 }
             }
             catch (Exception)
             {
-                return $"Version {GetVersion()}:\n\n• Не удалось загрузить список изменений с GitHub.";
+                return $"Version {GetLocalVersion()}:\n\n• Не удалось загрузить список изменений с GitHub.";
             }
         }
     }
@@ -90,17 +84,19 @@ namespace LA_Changeloger
     {
         [HarmonyPatch(typeof(MenuManager), "Start")]
         [HarmonyPostfix]
-        private static void MenuManager_Start_Postfix(MenuManager __instance)
+        private static async void MenuManager_Start_Postfix(MenuManager __instance)
         {
             try
             {
+                string latestVersion = await ModInfo.GetLatestVersionAsync();
+
                 TextMeshProUGUI[] allTexts = UnityEngine.Object.FindObjectsOfType<TextMeshProUGUI>(true);
 
                 foreach (var tmpText in allTexts)
                 {
                     if (tmpText != null && tmpText.gameObject.name == "VersionNum")
                     {
-                        string newVersion = $"LETHAL ADVENTURE v{ModInfo.GetVersion()}";
+                        string newVersion = $"LETHAL ADVENTURE v{latestVersion}";
                         tmpText.text = newVersion;
                         tmpText.SetText(newVersion);
                         tmpText.autoSizeTextContainer = true;
@@ -173,45 +169,45 @@ namespace LA_Changeloger
                 buttonComponent.onClick.RemoveAllListeners();
 
                 buttonComponent.onClick.AddListener(async () =>
-{
-    __instance.PlayConfirmSFX();
+                {
+                    __instance.PlayConfirmSFX();
 
-    Transform activeNotification = creditsButtonTransform.Find("Text (TMP) (3)");
-    if (activeNotification != null)
-    {
-        activeNotification.gameObject.SetActive(false);
-    }
+                    Transform activeNotification = creditsButtonTransform.Find("Text (TMP) (3)");
+                    if (activeNotification != null)
+                    {
+                        activeNotification.gameObject.SetActive(false);
+                    }
 
-    TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
+                    TextMeshProUGUI[] allTexts = creditsPanelTransform.GetComponentsInChildren<TextMeshProUGUI>(true);
 
-    string onlineChangelog = await ModInfo.DownloadChangelogAsync();
+                    string onlineChangelog = await ModInfo.DownloadChangelogAsync();
 
-    foreach (TextMeshProUGUI txt in allTexts)
-    {
-        if (txt.gameObject.name.Contains("CreditsText") || txt.text == "test")
-        {
-            txt.fontSize = 12.2f;
-            txt.characterSpacing = -12;
-            txt.lineSpacing = 40;
+                    foreach (TextMeshProUGUI txt in allTexts)
+                    {
+                        if (txt.gameObject.name.Contains("CreditsText") || txt.text == "test")
+                        {
+                            txt.fontSize = 12.2f;
+                            txt.characterSpacing = -12;
+                            txt.lineSpacing = 40;
 
-            txt.text = onlineChangelog;
+                            txt.text = onlineChangelog;
 
-            ScrollRect scrollRect = txt.GetComponentInParent<ScrollRect>();
-            if (scrollRect != null)
-            {
-                scrollRect.scrollSensitivity = 0.025f;
-            }
-        }
-        else if (txt.text == "Credits" || txt.gameObject.name.Contains("Title") || txt.gameObject.name.Contains("Header"))
-        {
-            txt.text = "LETHAL ADVENTURE (MODPACK)";
-            txt.fontSize = 22.6f;
-            txt.autoSizeTextContainer = true;
-        }
-    }
+                            ScrollRect scrollRect = txt.GetComponentInParent<ScrollRect>();
+                            if (scrollRect != null)
+                            {
+                                scrollRect.scrollSensitivity = 0.025f;
+                            }
+                        }
+                        else if (txt.text == "Credits" || txt.gameObject.name.Contains("Title") || txt.gameObject.name.Contains("Header"))
+                        {
+                            txt.text = "LETHAL ADVENTURE (MODPACK)";
+                            txt.fontSize = 22.6f;
+                            txt.autoSizeTextContainer = true;
+                        }
+                    }
 
-    creditsPanelTransform.gameObject.SetActive(true);
-});
+                    creditsPanelTransform.gameObject.SetActive(true);
+                });
             }
         }
     }
